@@ -246,6 +246,7 @@ def topics_tree_2_dict(tree):
             d['is_category'] = child.data.get('is_category', False)
             if not d['is_category']:
                 d['href'] = child.data.get('href')
+                d['is_blocked'] = child.data.get('is_blocked', False)
             res.append(d)
         return res
 
