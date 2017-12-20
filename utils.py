@@ -9,8 +9,8 @@ import re
 #from os.path import exists, isfile, join
 #from optparse import OptionParser
 #import os
-#import json
-#from collections import OrderedDict
+import json
+from collections import OrderedDict
 from functools import reduce
 #import codecs
 import uuid
@@ -31,6 +31,19 @@ reTopicId = re.compile(r'https://glav.su/forum/(\d+)/(\d+)/')
 re_author_id = re.compile('https://glav.su/members/(\d+)/')
 
 tag_columns = ['tag1', 'tag2', 'tag3', 'tag4']
+
+
+def load_json(fname):
+    with open(fname) as f:
+        return json.load(f)
+
+
+def save_json(fname, d, pretty=False):
+    with open(fname, 'w') as f:
+        if pretty:
+            json.dump(d, f, indent=4, sort_keys=True)
+        else:
+            json.dump(d, f)
 
 
 def parse_tree(tree_md):
@@ -147,18 +160,19 @@ def create_topics_tree(tree, df_topics, tag_columns=tag_columns):
                     if not pd.isnull(row[tag_column])]
             tags = [u'{} {}'.format(main_tid, tag) for tag in tags]
 
-
             for tag in tags:
                 topics_tree_id = uuid.uuid4()
                 text = row['title']
                 try:
-                    topics_tree.create_node(text, topics_tree_id, parent=tag, data=dict(row))
+                    topics_tree.create_node(text, topics_tree_id, parent=tag,
+                                            data=dict(row))
                 except treelib.exceptions.DuplicatedNodeIdError as e:
                     print(u'{}'.format(e))
                 except treelib.exceptions.NodeIDAbsentError as e:
                     print(u'{}'.format(e))
 
     return topics_tree
+
 
 def topics_tree_2_markdown(tree):
     res = u''
@@ -188,6 +202,7 @@ def topics_tree_2_markdown(tree):
             res += s + "\n"
     return res
 
+
 def walk(tree, node):
     if isinstance(node, Tree):
         node.tag = 'root'
@@ -215,3 +230,25 @@ def walk(tree, node):
             for n in walk(tree, child):
                 yield n
 
+
+def topics_tree_2_dict(tree):
+    def get_chidlrens(tree, node):
+        res = []
+        if tree == node:
+            _id = -1
+        else:
+            _id = node.identifier
+
+        for child in tree.children(_id):
+            d = OrderedDict()
+            d['name'] = child.tag
+            d['children'] = get_chidlrens(tree, child)
+            res.append(d)
+            #print(child.tag)
+        return res
+
+    res = OrderedDict()
+
+    res['name'] = 'root'
+    res['children'] = get_chidlrens(tree, tree)
+    return res
