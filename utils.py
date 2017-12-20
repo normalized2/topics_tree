@@ -243,8 +243,10 @@ def topics_tree_2_dict(tree):
             d = OrderedDict()
             d['name'] = child.tag
             d['children'] = get_chidlrens(tree, child)
+            d['is_category'] = child.data.get('is_category', False)
+            if not d['is_category']:
+                d['href'] = child.data.get('href')
             res.append(d)
-            #print(child.tag)
         return res
 
     res = OrderedDict()
