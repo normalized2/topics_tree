@@ -30,7 +30,7 @@ reMainTopicId = re.compile(r'https://glav.su/forum/(\d+)/')
 reTopicId = re.compile(r'https://glav.su/forum/(\d+)/(\d+)/')
 re_author_id = re.compile('https://glav.su/members/(\d+)/')
 
-tag_columns = ['tag1', 'tag2', 'tag3']
+tag_columns = ['tag1', 'tag2', 'tag3', 'tag4']
 
 
 def parse_tree(tree_md):
